@@ -10,7 +10,7 @@ int16_t gx, gy, gz;
 float ang_x, ang_y, ang_z;
 float ang_x_prev, ang_y_prev, ang_z_prev;
 
-long tiempo_prev;
+unsigned long tiempo_prev;
 float dt;
 
 const int botonInicialPin = 3;  // Pin del botón para almacenar posición inicial
