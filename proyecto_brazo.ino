@@ -57,12 +57,12 @@ void loop() {
   sortArray(gz_samples, numSamples);
 
   // Calcular media entre el dato 20 y el dato 80
-  float ax_avg = calculateAverage(ax_samples, 20, 80);
-  float ay_avg = calculateAverage(ay_samples, 20, 80);
-  float az_avg = calculateAverage(az_samples, 20, 80);
-  float gx_avg = calculateAverage(gx_samples, 20, 80);
-  float gy_avg = calculateAverage(gy_samples, 20, 80);
-  float gz_avg = calculateAverage(gz_samples, 20, 80);
+  auto ax_avg = calculateAverage(&ax_samples[18], 64);
+  auto ay_avg = calculateAverage(&ay_samples[18], 64);
+  auto az_avg = calculateAverage(&az_samples[18], 64);
+  auto gx_avg = calculateAverage(&gx_samples[18], 64);
+  auto gy_avg = calculateAverage(&gy_samples[18], 64);
+  auto gz_avg = calculateAverage(&gz_samples[18], 64);
 
   // Escalado de lecturas
   float ax_m_s2 = ax_avg * (9.81 / 16384.0);
@@ -171,10 +171,10 @@ void sortArray(int16_t arr[], int size) {
   }
 }
 
-float calculateAverage(int16_t arr[], int start, int end) {
-  float sum = 0;
-  for (int i = start; i <= end; ++i) {
-    sum += arr[i];
+int16_t calculateAverage(int16_t *buf, size_t size) {
+  int32_t sum = 0;
+  for (; size; size--) {
+    sum += *buf++;
   }
-  return sum / (end - start + 1);
+  return (int16_t)(sum >> 6);
 }
