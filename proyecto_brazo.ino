@@ -10,7 +10,7 @@ int16_t gx, gy, gz;
 float ang_x, ang_y, ang_z;
 float ang_x_prev, ang_y_prev, ang_z_prev;
 
-unsigned long tiempo_prev;
+long tiempo_prev;
 float dt;
 
 const int botonInicialPin = 3;  // Pin del botón para almacenar posición inicial
@@ -43,8 +43,8 @@ void setup() {
 void loop() {
   // Obtener datos del sensor
   for (int i = 0; i < numSamples; ++i) {
-    sensor.getAcceleration(&ax_samples[i], &ay_samples[i], &az_samples[i]);
-    sensor.getRotation(&gx_samples[i], &gy_samples[i], &gz_samples[i]);
+    sensor.getAcceleration(&ax, &ay, &az);
+    sensor.getRotation(&gx, &gy, &gz);
     delay(10);
   }
 
@@ -57,12 +57,12 @@ void loop() {
   sortArray(gz_samples, numSamples);
 
   // Calcular media entre el dato 20 y el dato 80
-  auto ax_avg = calculateAverage(&ax_samples[18], 64);
-  auto ay_avg = calculateAverage(&ay_samples[18], 64);
-  auto az_avg = calculateAverage(&az_samples[18], 64);
-  auto gx_avg = calculateAverage(&gx_samples[18], 64);
-  auto gy_avg = calculateAverage(&gy_samples[18], 64);
-  auto gz_avg = calculateAverage(&gz_samples[18], 64);
+  auto ax_avg = ax;
+  auto ay_avg = ay;
+  auto az_avg = az;
+  auto gx_avg = gx;
+  auto gy_avg = gy;
+  auto gz_avg = gz;
 
   // Escalado de lecturas
   float ax_m_s2 = ax_avg * (9.81 / 16384.0);
@@ -102,6 +102,8 @@ void loop() {
 
   
   dt = (millis()-tiempo_prev)/1000.0;
+  Serial.print("dt=");
+  Serial.println(dt, 6);
   tiempo_prev = millis();
   // Calcular ángulo de rotación con el giroscopio y filtro complemento
 
