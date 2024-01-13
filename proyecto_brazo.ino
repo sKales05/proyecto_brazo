@@ -8,12 +8,16 @@ MPU6050 sensor;
 float ang_x, ang_y;
 float ang_x_prev, ang_y_prev;
 
+float accel_ang_x_inicial, accel_ang_y_inicial, accel_ang_z_inicial;
+float accel_ang_x_final, accel_ang_y_final, accel_ang_z_final;
+
+
 long tiempo_prev;
 float dt;
 
 const int botonInicialPin = 3;  // Pin del botón para almacenar posición inicial
 const int botonFinalPin = 4;    // Pin del botón para almacenar posición final
-const int numSamples = 60;
+const int numSamples = 32;
 int16_t ax_samples[numSamples], ay_samples[numSamples], az_samples[numSamples];
 int16_t gx_samples[numSamples], gy_samples[numSamples], gz_samples[numSamples];
 
@@ -46,20 +50,20 @@ void loop() {
   }
 
   // Ordenar arrays
-  sortArray(ax_samples, numSamples);
-  sortArray(ay_samples, numSamples);
-  sortArray(az_samples, numSamples);
-  sortArray(gx_samples, numSamples);
-  sortArray(gy_samples, numSamples);
-  sortArray(gz_samples, numSamples);
+  // sortArray(ax_samples, numSamples);
+  // sortArray(ay_samples, numSamples);
+  // sortArray(az_samples, numSamples);
+  // sortArray(gx_samples, numSamples);
+  // sortArray(gy_samples, numSamples);
+  // sortArray(gz_samples, numSamples);
 
   // Calcular media entre el dato 20 y el dato 80
-  auto ax_avg = calculateAverage(&ax_samples[14], 46);
-  auto ay_avg = calculateAverage(&ay_samples[14], 46);
-  auto az_avg = calculateAverage(&az_samples[14], 46);
-  auto gx_avg = calculateAverage(&gx_samples[14], 46);
-  auto gy_avg = calculateAverage(&gy_samples[14], 46);
-  auto gz_avg = calculateAverage(&gz_samples[14], 46);
+  auto ax_avg = calculateAverage(ax_samples);
+  auto ay_avg = calculateAverage(ay_samples);
+  auto az_avg = calculateAverage(az_samples);
+  auto gx_avg = calculateAverage(gx_samples);
+  auto gy_avg = calculateAverage(gy_samples);
+  auto gz_avg = calculateAverage(gz_samples);
 
   // Escalado de lecturas
   //float ax_m_s2 = ax_avg * (9.81 / 16384.0);
@@ -99,6 +103,9 @@ void loop() {
 
   
   dt = (millis()-tiempo_prev)/1000.0;
+  //if (dt > 0.1) {
+    //dt -= 0.1;
+  //}
   Serial.print("dt=");
   Serial.println(dt, 4);
   tiempo_prev = millis();
@@ -106,7 +113,6 @@ void loop() {
 
   ang_x = 0.98 * (ang_x_prev + (gx_avg / 131) * dt) + 0.02 * accel_ang_x;
   ang_y = 0.98 * (ang_y_prev + (gy_avg / 131) * dt) + 0.02 * accel_ang_y;
-
 
   ang_x_prev = ang_x;
   ang_y_prev = ang_y;
@@ -120,10 +126,20 @@ void loop() {
   // Verificar y guardar ángulo inicial
   verificarBoton(botonInicialPin, guardarInicial);
   guardarAngulo(guardarInicial, "Guardando ángulo inicial...");
+  if (guardarInicial) {
+    accel_ang_x_inicial = accel_ang_x;
+    accel_ang_y_inicial = accel_ang_y;
+    accel_ang_z_inicial = accel_ang_z;
+  }
 
   // Verificar y guardar ángulo final
   verificarBoton(botonFinalPin, guardarFinal);
   guardarAngulo(guardarFinal, "Guardando ángulo final...");
+  if (guardarFinal) {
+    accel_ang_x_final = accel_ang_x;
+    accel_ang_y_final = accel_ang_y;
+    accel_ang_z_final = accel_ang_z;
+  }
   
 }
 
@@ -144,12 +160,12 @@ void sortArray(int16_t arr[], int size) {
   }
 }
 
-int16_t calculateAverage(int16_t *buf, size_t size) {
+int16_t calculateAverage(int16_t *buf) {
   int32_t sum = 0;
-  for (; size; size--) {
+  for (auto size = numSamples; size; size--) {
     sum += *buf++;
   }
-  return (int16_t)(sum >> 6);
+  return (int16_t)(sum >> 5);
 }
 
 void verificarBoton(int pin, int &flag) {
