@@ -43,8 +43,8 @@ void setup() {
 void loop() {
   // Obtener datos del sensor
   for (int i = 0; i < numSamples; ++i) {
-    sensor.getAcceleration(&ax, &ay, &az);
-    sensor.getRotation(&gx, &gy, &gz);
+    sensor.getAcceleration(&ax_samples[i], &ay_samples[i], &az_samples[i]);
+    sensor.getRotation(&gx_samples[i], &gy_samples[i], &gz_samples[i]);
     delay(10);
   }
 
@@ -57,35 +57,35 @@ void loop() {
   sortArray(gz_samples, numSamples);
 
   // Calcular media entre el dato 20 y el dato 80
-  auto ax_avg = ax;
-  auto ay_avg = ay;
-  auto az_avg = az;
-  auto gx_avg = gx;
-  auto gy_avg = gy;
-  auto gz_avg = gz;
+  auto ax_avg = calculateAverage(&ax_samples[18], 64);
+  auto ay_avg = calculateAverage(&ay_samples[18], 64);
+  auto az_avg = calculateAverage(&az_samples[18], 64);
+  auto gx_avg = calculateAverage(&gx_samples[18], 64);
+  auto gy_avg = calculateAverage(&gy_samples[18], 64);
+  auto gz_avg = calculateAverage(&gz_samples[18], 64);
 
   // Escalado de lecturas
-  float ax_m_s2 = ax_avg * (9.81 / 16384.0);
-  float ay_m_s2 = ay_avg * (9.81 / 16384.0);
-  float az_m_s2 = az_avg * (9.81 / 16384.0);
-  float gx_deg_s = gx_avg * (250.0 / 32768.0);
-  float gy_deg_s = gy_avg * (250.0 / 32768.0);
-  float gz_deg_s = gz_avg * (250.0 / 32768.0);
+  //float ax_m_s2 = ax_avg * (9.81 / 16384.0);
+  //float ay_m_s2 = ay_avg * (9.81 / 16384.0);
+  //float az_m_s2 = az_avg * (9.81 / 16384.0);
+  //float gx_deg_s = gx_avg * (250.0 / 32768.0);
+  //float gy_deg_s = gy_avg * (250.0 / 32768.0);
+  //float gz_deg_s = gz_avg * (250.0 / 32768.0);
 
   // Mostrar las lecturas escaladas
-  Serial.print("Aceleracion (m/s^2): [");
-  Serial.print(ax_m_s2, 2);
-  Serial.print(", ");
-  Serial.print(ay_m_s2, 2);
-  Serial.print(", ");
-  Serial.print(az_m_s2, 2);
-  Serial.print("]\tGiroscopio (deg/s): [");
-  Serial.print(gx_deg_s, 2);
-  Serial.print(", ");
-  Serial.print(gy_deg_s, 2);
-  Serial.print(", ");
-  Serial.print(gz_deg_s, 2);
-  Serial.println("]");
+  //Serial.print("Aceleracion (m/s^2): [");
+  //Serial.print(ax_m_s2, 2);
+  //Serial.print(", ");
+  //Serial.print(ay_m_s2, 2);
+  //Serial.print(", ");
+  //Serial.print(az_m_s2, 2);
+  //Serial.print("]\tGiroscopio (deg/s): [");
+  //Serial.print(gx_deg_s, 2);
+  //Serial.print(", ");
+  //Serial.print(gy_deg_s, 2);
+  //Serial.print(", ");
+  //Serial.print(gz_deg_s, 2);
+  //Serial.println("]");
 
   // Calcular ángulo de inclinación con el acelerómetro
   float accel_ang_x = atan(ay_avg / sqrt(pow(ax_avg, 2) + pow(az_avg, 2))) * (180.0 / PI);
@@ -118,9 +118,7 @@ void loop() {
   Serial.print("Rotacion (grados): X=");
   Serial.print(ang_x, 2);
   Serial.print("\tY=");
-  Serial.print(ang_y, 2);
-  Serial.print("\tZ=");
-  Serial.println(ang_z, 2);
+  Serial.println(ang_y, 2);
 
     // Verificar si el botón de guardar inicial está presionado
   if (digitalRead(botonInicialPin) == LOW) {
@@ -151,8 +149,6 @@ void loop() {
     guardarFinal = false;
     // Lógica para ángulo final si es necesario
   }
-
-  delay(100);
   
 }
 
