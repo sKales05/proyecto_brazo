@@ -19,7 +19,7 @@ long tiempo_prev;
 float dt;
 
 const int botonCalibracionPin = 3;
-const int botonFinalPin = 4;
+const int botoninicialPin = 4;
 bool calibracionActiva = false;
 
 long f_ax, f_ay, f_az;
@@ -37,8 +37,8 @@ int16_t ax_samples[numSamples], ay_samples[numSamples], az_samples[numSamples];
 int16_t gx_samples[numSamples], gy_samples[numSamples], gz_samples[numSamples];
 
 
-int guardarInicial = 0;
 int guardarFinal = 0;
+int guardarinicial = 0;
 
 
 void setup() {
@@ -47,7 +47,7 @@ void setup() {
   sensor.initialize();
 
   pinMode(botonCalibracionPin, INPUT_PULLUP);
-  pinMode(botonFinalPin, INPUT_PULLUP);
+  pinMode(botoninicialPin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT); // Configurar el pin del LED como salida
 
   if (sensor.testConnection())
@@ -168,15 +168,15 @@ void loop() {
     Serial.println(ang_y, 2);
 
 
-    // Verificar y guardar ángulo final
-    verificarBoton(botonFinalPin, guardarFinal);
-    guardarAngulo(guardarFinal, "Guardando ángulo final...");
-    if (guardarFinal) {
-      accel_ang_x_final = accel_ang_x;
-      accel_ang_y_final = accel_ang_y;
-      accel_ang_z_final = accel_ang_z;
+    // Verificar y guardar ángulo inicial
+    verificarBoton(botoninicialPin, guardarinicial);
+    guardarAngulo(guardarinicial, "Guardando ángulo inicial...", accel_ang_x);
+    if (guardarinicial) {
+      accel_ang_x_inicial = accel_ang_x;
+      accel_ang_y_inicial = accel_ang_y;
+      accel_ang_z_inicial = accel_ang_z;
     }
-    controlarLED(accel_ang_x, 10); // 10 grados de margen
+    controlarLED(accel_ang_x_inicial, 10); // 10 grados de margen
   }
 }
 
@@ -278,7 +278,7 @@ void calibrar() {
   counter++;
 
   // Detener la calibración al presionar el botón
-  if (digitalRead(botonFinalPin) == LOW) {
+  if (digitalRead(botoninicialPin) == LOW) {
     calibracionActiva = false;
     Serial.println("Calibración completada");
   }
@@ -298,9 +298,11 @@ void verificarBoton(int pin, int &flag) {
   }
 }
 
-void guardarAngulo(int &flag, const char *mensaje) {
+void guardarAngulo(int &flag, const char *mensaje, float angulo) {
   if (flag) {
-    Serial.println(mensaje);
+    Serial.print(mensaje);
+    Serial.print(": ");
+    Serial.println(angulo, 2);
     flag = 0;
   }
 }
