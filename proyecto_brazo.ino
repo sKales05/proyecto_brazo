@@ -13,6 +13,7 @@ float ang_x_prev, ang_y_prev;
 float accel_ang_x_inicial, accel_ang_y_inicial, accel_ang_z_inicial;
 float accel_ang_x_final, accel_ang_y_final, accel_ang_z_final;
 
+const int ledPin = 13; // Pin del LED en la placa de Arduino
 
 long tiempo_prev;
 float dt;
@@ -47,6 +48,7 @@ void setup() {
 
   pinMode(botonCalibracionPin, INPUT_PULLUP);
   pinMode(botonFinalPin, INPUT_PULLUP);
+  pinMode(ledPin, OUTPUT); // Configurar el pin del LED como salida
 
   if (sensor.testConnection())
     Serial.println("Sensor iniciado correctamente");
@@ -174,6 +176,7 @@ void loop() {
       accel_ang_y_final = accel_ang_y;
       accel_ang_z_final = accel_ang_z;
     }
+    controlarLED(accel_ang_x, 10); // 10 grados de margen
   }
 }
 
@@ -299,5 +302,33 @@ void guardarAngulo(int &flag, const char *mensaje) {
   if (flag) {
     Serial.println(mensaje);
     flag = 0;
+  }
+}
+
+void controlarLED(float angulo, int margen) {
+  // Verificar si el ángulo se desvía más de +-margen grados de 0
+  if (angulo > margen || angulo < -margen) {
+    // Encender el LED más rápido cuanto más se desvíe, pero limitar la velocidad máxima
+    int velocidadParpadeo = map(abs(angulo), margen, 70, 1000, 50); // Ajustar el rango de velocidad
+    velocidadParpadeo = constrain(velocidadParpadeo, 50, 1000); // Limitar la velocidad máxima
+    parpadearLED(velocidadParpadeo);
+  } else {
+    // Apagar el LED si está dentro del margen
+    digitalWrite(ledPin, LOW);
+  }
+}
+
+void parpadearLED(int velocidad) {
+  static unsigned long tiempoPrevioParpadeo = 0;
+  static bool estadoLED = LOW;
+
+  // Verificar si ha pasado suficiente tiempo para cambiar el estado del LED
+  if (millis() - tiempoPrevioParpadeo >= velocidad) {
+    // Cambiar el estado del LED
+    estadoLED = !estadoLED;
+    digitalWrite(ledPin, estadoLED);
+
+    // Actualizar el tiempo previo para el siguiente cambio de estado
+    tiempoPrevioParpadeo = millis();
   }
 }
